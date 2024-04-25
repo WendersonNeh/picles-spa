@@ -1,18 +1,13 @@
-
-import { UseQueryOptions, UseQueryResult, useQuery, } from "@tanstack/react-query";
+import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { getShelter } from "../services/shelter/getShelter";
 import { IShelter } from "../interfaces/shelter";
 
-export function useShelter( 
-    option?: Partial<UseQueryOptions<IShelter,Error>>
-    ): UseQueryResult<IShelter, Error> {
+export function useshelter(options?: Partial<UseQueryOptions<IShelter, Error>>) {
     const result = useQuery({
         staleTime: Infinity,
-        ...option,
+        ...options,
         queryKey: ['get-shelter'],
-        queryFn: () => getShelter(),
-
+        queryFn: () => getShelter()
     })
-    
     return result
 }

@@ -1,21 +1,24 @@
-import { useSearchParams } from 'react-router-dom'
-import { Card } from '../../components/common/Card'
-import { Header } from '../../components/common/Header'
-import { Pagination } from '../../components/common/Pagination'
-import { Skeleton } from '../../components/common/Skeleton'
-import { Grid } from '../../components/layout/Grid'
-import { usePetList } from '../../hooks/usePetList'
+import { Header } from "../../components/common/Header/Header";
+import { Grid } from "../../components/layout/Grid/Grid";
+import { Card } from "../../components/common/Card";
+import { Skeleton } from "../../components/common/Skeleton";
+import { Pagination } from "../../components/common/Pagination";
+import { useSearchParams } from "react-router-dom";
 import styles from './Pets.module.css'
-import { Select } from '../../components/common/Select'
-import { Button, ButtonVariant } from '../../components/common/Button'
-import { filterColumns } from './Pets.constants'
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { GetPetsRequest } from '../../interfaces/pet'
+import { Select } from "../../components/common/Select/Slect";
+import { Button } from "../../components/common/Button";
+import { filterColumns } from "./Pets.Constants";
+import { usePetList } from "../../hooks/usePetList";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { GetPetsRequest } from "../../interfaces/pets";
+import { ButtonVariant } from "../../components/common/Button/Button.constants";
+
+
+
 
 export function Pets() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isButtonEnabled, setIsButtonEnabled] = useState(false)
-  
 
   const urlParams = {
     page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
@@ -24,23 +27,27 @@ export function Pets() {
     gender: searchParams.get('gender') ?? '',
   }
 
-  function checkButtonStatus(event: ChangeEvent<HTMLFormElement>) {
-          const { type, size, gender } = getFormValue(event.target.form)
-
-          if (type !== urlParams.type || size !== urlParams.type || gender !== urlParams.type)
-              setIsButtonEnabled(true)
-          else
-              setIsButtonEnabled(false)
-
-  }
-
-  const { data, isLoading } = usePetList(urlParams)
+  const usePetLists = usePetList(urlParams)
 
   function changePage(page: number) {
     setSearchParams((params) => {
       params.set('page', String(page))
       return params
     })
+  }
+
+  function checkButtonStatus(event: ChangeEvent<HTMLFormElement>) {
+    const { type, size, gender } = getFormValue(event.target.form)
+
+    if (
+      type !== urlParams.type ||
+      size !== urlParams.size ||
+      gender !== urlParams.gender
+    ) {
+      setIsButtonEnabled(true)
+    } else {
+      setIsButtonEnabled(false)
+    }
   }
 
   function getFormValue(form: HTMLFormElement) {
@@ -72,50 +79,65 @@ export function Pets() {
     setIsButtonEnabled(false)
   }
 
+
   return (
-    <Grid>
-      <div className={styles.container}>
-        <Header />
-        <form className={styles.filters} onSubmit={applyFilters} onChange={checkButtonStatus}>
-          <div className={styles.columns}>
-            {filterColumns.map((filter) => (
-              <div key={filter.name} className={styles.column}>
-                <Select
-                  label={filter.title}
-                  defaultValue={urlParams[filter.name]}
-                  name={filter.name}
-                  options={filter.options}
-                />
-              </div>
-            ))}
-          </div>
-          <Button type="submit"
-          variant={
-            isButtonEnabled ? ButtonVariant.Default : ButtonVariant.Disabled
+    <>
+      <Grid>
+        <div className={styles.container}>
+          <Header />
+
+          <form className={styles.filters} onSubmit={applyFilters} onChange={checkButtonStatus}>
+            <div className={styles.columns}>
+              {filterColumns.map((filter) => (
+                <div className={styles.column} key={filter.name}>
+                  <Select
+                    label={filter.title}
+                    defaultValue={urlParams[filter.name]}
+                    options={filter.options}
+                    name={filter.name}
+                  >
+
+                  </Select>
+                </div>
+              ))}
+
+            </div>
+            <Button type="submit"
+              variant={ isButtonEnabled ? ButtonVariant.Default : ButtonVariant.Disabled}>Buscar</Button>
+          </form>
+
+          {usePetLists.isLoading && (
+            <Skeleton containerClassName={styles.skeleton} count={10} />
+          )
+
           }
-          >Buscar</Button>
-        </form>
-        {isLoading && (
-          <Skeleton containerClassName={styles.skeleton} count={10} />
-        )}
-        <main className={styles.list}>
-          {data?.items?.map((pet) => (
-            <Card
-              key={pet.id}
-              href={`/pets/${pet.id}`}
-              text={pet.name}
-              thumb={pet.photo}
+          <main className={styles.list}>
+            {
+              usePetLists.data?.items?.map((pet) => (
+                <Card
+                  key={pet.id}
+                  href={`/pets/${pet.id}`}
+                  text={pet.name}
+                  thumb={pet.photo}
+                />
+              ))
+            }
+
+          </main>
+
+          {usePetLists.data?.currentPage &&
+            <Pagination
+              currentPage={usePetLists.data.currentPage}
+              totalPages={usePetLists.data.totalPages}
+              onPageChange={(number) => changePage(number)}
+
             />
-          ))}
-        </main>
-        {data?.currentPage && (
-          <Pagination
-            currentPage={data.currentPage}
-            totalPages={data.totalPages}
-            onPageChange={(number) => changePage(number)}
-          />
-        )}
-      </div>
-    </Grid>
+          }
+
+        </div>
+
+      </Grid>
+
+    </>
   )
 }
