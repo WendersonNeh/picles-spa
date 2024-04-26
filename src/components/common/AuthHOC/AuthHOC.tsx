@@ -3,7 +3,7 @@ import { useshelter } from "../../../hooks/useShelter";
 
 export function AuthHOC() {
     const { data, isLoading } = useshelter()
-    const canAcess = !!data?.shelterWhatsapp
+    const canAcess = !!data?.shelterWhatsApp
 
     if (isLoading) return null
     if (!canAcess) return
